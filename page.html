@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>FlameDrop</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23e8590c'/%3E%3Cpath fill='%23fff' d='M34 10c2 10 12 15 12 28a14 14 0 0 1-28 0c0-7 3-10 6-13 1 4 3 6 5 7-2-8 0-16 5-22z'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f4f5f7;--surface:#ffffff;--surface-2:#f9fafb;--line:#e4e7ec;--line-strong:#d0d5dd;
+  --ink:#101828;--ink-2:#344054;--muted:#667085;
+  --accent:#e8590c;--accent-hover:#cf4f0a;--accent-ink:#ffffff;--accent-soft:#fff1e8;
+  --ok:#067647;--bad:#b42318;--warn:#b54708;--warn-soft:#fffaeb;
+  --shadow:0 1px 2px rgba(16,24,40,.05);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0c0f13;--surface:#14181e;--surface-2:#191e25;--line:#252b34;--line-strong:#333b47;
+    --ink:#f2f4f7;--ink-2:#d0d5dd;--muted:#98a2b3;
+    --accent:#ff7a2e;--accent-hover:#ff8f4d;--accent-ink:#1a0d03;--accent-soft:#2b1a0f;
+    --ok:#47cd89;--bad:#f97066;--warn:#fdb022;--warn-soft:#2b2008;
+    --shadow:none;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;min-height:100vh;background:var(--bg);color:var(--ink);
+  font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,p,ul{margin:0}
+ul{list-style:none;padding:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.ic{
+  width:18px;height:18px;flex:none;fill:none;stroke:currentColor;
+  stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;
+}
+
+.top{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{
+  max-width:960px;height:60px;margin:0 auto;padding:0 20px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.brand{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:650;letter-spacing:-.01em}
+.logo{width:30px;height:30px;border-radius:8px;background:var(--accent);display:grid;place-items:center}
+.logo svg{width:18px;height:18px;fill:var(--accent-ink)}
+.top-actions{display:flex;align-items:center;gap:8px}
+.pill{
+  display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;
+  border:1px solid var(--line);border-radius:999px;background:var(--surface-2);
+  color:var(--ink-2);font-size:13px;font-variant-numeric:tabular-nums;
+}
+.pill.warn{color:var(--warn);background:var(--warn-soft);border-color:transparent}
+
+main{max-width:960px;margin:0 auto;padding:28px 20px 56px}
+.page-head{margin-bottom:20px}
+.page-head h1{font-size:24px;line-height:1.25;font-weight:650;letter-spacing:-.02em}
+.sub{margin-top:4px;color:var(--muted)}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  height:36px;padding:0 14px;border:1px solid transparent;border-radius:8px;
+  font:inherit;font-size:14px;font-weight:600;white-space:nowrap;text-decoration:none;cursor:pointer;
+  transition:background-color .15s,border-color .15s,color .15s;
+}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{background:var(--accent-hover)}
+.btn.ghost{background:var(--surface);color:var(--ink-2);border-color:var(--line-strong)}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.text{height:30px;padding:0 10px;background:transparent;color:var(--muted);font-weight:500}
+.btn.text:hover{background:var(--surface-2);color:var(--ink)}
+.btn.sm{height:32px;padding:0 12px;font-size:13px}
+.btn.block{width:100%;height:44px}
+.btn:disabled{opacity:.6;cursor:default}
+.icon-btn{
+  width:32px;height:32px;flex:none;display:grid;place-items:center;border:0;border-radius:8px;
+  background:transparent;color:var(--muted);cursor:pointer;
+}
+.icon-btn:hover{background:var(--surface-2);color:var(--ink)}
+
+.auth{display:flex;justify-content:center;padding-top:6vh}
+.auth-card{
+  width:100%;max-width:400px;padding:32px 28px;border:1px solid var(--line);border-radius:14px;
+  background:var(--surface);box-shadow:0 8px 24px rgba(16,24,40,.06);
+}
+.auth-icon{
+  width:44px;height:44px;margin-bottom:18px;display:grid;place-items:center;
+  border-radius:10px;background:var(--accent-soft);color:var(--accent);
+}
+.auth-icon .ic{width:22px;height:22px}
+.auth-card h1{font-size:20px;font-weight:650;letter-spacing:-.01em}
+.auth-card .sub{margin-bottom:22px}
+.field{display:block;margin-bottom:6px;font-size:13px;font-weight:600;color:var(--ink-2)}
+#code{
+  width:100%;height:56px;border:1px solid var(--line-strong);border-radius:8px;
+  background:var(--surface);color:var(--ink);text-align:center;text-indent:.5em;letter-spacing:.5em;
+  font:600 26px/1 ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+#code::placeholder{color:var(--line-strong)}
+#code:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.auth-card .btn{margin-top:14px}
+.err{min-height:20px;margin-top:12px;color:var(--bad);font-size:13px}
+.facts{
+  display:grid;gap:6px;margin-top:18px;padding-top:18px;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;
+}
+
+.callout{
+  display:flex;align-items:center;flex-wrap:wrap;gap:8px 20px;margin-bottom:20px;padding:16px 20px;
+  border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;
+  background:var(--surface);box-shadow:var(--shadow);
+}
+.callout-text{flex:1;min-width:200px}
+.callout-title{font-weight:600}
+.callout-text p{color:var(--muted);font-size:13px}
+.digits{
+  font:700 30px/1.2 ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  letter-spacing:.12em;font-variant-numeric:tabular-nums;
+}
+.callout .icon-btn{align-self:flex-start}
+
+.card{
+  margin-bottom:20px;overflow:hidden;border:1px solid var(--line);border-radius:10px;
+  background:var(--surface);box-shadow:var(--shadow);
+}
+.card-head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:12px 20px;min-height:54px;border-bottom:1px solid var(--line);
+}
+.card-head h2{font-size:15px;font-weight:600}
+.count{
+  margin-left:6px;padding:1px 8px;border:1px solid var(--line);border-radius:999px;
+  background:var(--surface-2);color:var(--muted);font-size:12px;font-weight:500;
+}
+.count:empty{display:none}
+
+.drop{
+  display:flex;flex-direction:column;align-items:center;gap:6px;margin:16px 20px;padding:32px 16px;
+  border:1.5px dashed var(--line-strong);border-radius:10px;background:var(--surface-2);
+  text-align:center;cursor:pointer;transition:border-color .15s,background-color .15s;
+}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.drop-icon{
+  width:44px;height:44px;margin-bottom:4px;display:grid;place-items:center;
+  border:1px solid var(--line);border-radius:50%;background:var(--surface);color:var(--accent);
+}
+.drop-title{font-size:15px;font-weight:600}
+.drop-title u{color:var(--accent);text-underline-offset:3px}
+.drop-sub{color:var(--muted);font-size:13px}
+
+.queue:empty{display:none}
+.qitem{display:flex;align-items:center;gap:12px;padding:12px 20px;border-top:1px solid var(--line)}
+.qmain{flex:1;min-width:0}
+.qtop{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:550}
+.state{flex:none;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.state.ok{color:var(--ok)}
+.state.bad{color:var(--bad)}
+.track{height:6px;margin-top:8px;overflow:hidden;border-radius:3px;background:var(--line)}
+.track i{display:block;width:0;height:100%;border-radius:3px;background:var(--accent)}
+.track.done i{background:var(--ok)}
+.qsub{margin-top:4px;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+
+.badge{
+  --c:#667085;flex:none;width:40px;height:40px;display:grid;place-items:center;
+  border-radius:8px;background:var(--surface-2);color:var(--c);
+  font-size:11px;font-weight:700;letter-spacing:.02em;
+  background:color-mix(in srgb,var(--c) 14%,var(--surface));
+}
+.k-image{--c:#3b82f6}
+.k-video{--c:#8b5cf6}
+.k-audio{--c:#ec4899}
+.k-doc{--c:#ef4444}
+.k-sheet{--c:#10b981}
+.k-slide{--c:#f59e0b}
+.k-archive{--c:#14b8a6}
+
+.thead,.frow{
+  display:grid;grid-template-columns:minmax(0,1fr) 90px 150px 118px;
+  align-items:center;gap:16px;padding:0 20px;
+}
+.thead{height:36px;border-bottom:1px solid var(--line);background:var(--surface-2);color:var(--muted);font-size:12px;font-weight:600}
+.frow{min-height:64px;border-bottom:1px solid var(--line)}
+.frow:last-child{border-bottom:0}
+.frow:hover{background:var(--surface-2)}
+.fname{display:flex;align-items:center;gap:12px;min-width:0}
+.ftext{display:flex;flex-direction:column;min-width:0}
+.fmeta{display:none;gap:10px;color:var(--muted);font-size:12px}
+.fsize,.fdate{color:var(--ink-2);font-variant-numeric:tabular-nums}
+.frow .btn{justify-self:end}
+.empty{
+  display:flex;flex-direction:column;align-items:center;gap:8px;padding:44px 20px;
+  color:var(--muted);text-align:center;
+}
+.empty .ic{width:28px;height:28px}
+.empty strong{color:var(--ink-2);font-weight:600}
+
+@media (prefers-reduced-motion:no-preference){
+  .track i{transition:width .15s linear}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important}
+}
+@media (max-width:640px){
+  .top-in{padding:0 14px}
+  main{padding:20px 14px 40px}
+  .btn.collapse{width:36px;padding:0}
+  .btn.collapse .lbl{display:none}
+  .card-head{padding:12px 14px}
+  .drop{margin:14px}
+  .qitem{padding:12px 14px}
+  .thead{display:none}
+  .frow{grid-template-columns:minmax(0,1fr) auto;padding:0 14px}
+  .fsize,.fdate{display:none}
+  .fmeta{display:flex}
+  .auth{padding-top:2vh}
+  .auth-card{padding:26px 20px}
+}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v12m0 0-5-5m5 5 5-5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3"/><path d="M16 8l4 4-4 4M20 12H9"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+</svg>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <span class="logo"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M34 6c2 11 14 17 14 32a14 14 0 0 1-28 0c0-8 3-11 6-14 1 4 3 6 5 7-2-8 0-16 3-25z"/></svg></span>
+      <span>FlameDrop</span>
+    </div>
+    <div id="topActions" class="top-actions" hidden>
+      <span id="sessionPill" class="pill" title="Time left in this session">
+        <svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg>
+        <span id="timer">0:00</span>
+      </span>
+      <button id="newCode" class="btn ghost sm collapse" type="button" aria-label="Pair another device" title="Pair another device">
+        <svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg><span class="lbl">Pair device</span>
+      </button>
+      <button id="logout" class="btn ghost sm collapse" type="button" aria-label="Disconnect" title="Disconnect">
+        <svg class="ic" aria-hidden="true"><use href="#i-logout"/></svg><span class="lbl">Disconnect</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section id="pair" class="auth" hidden>
+    <div class="auth-card">
+      <div class="auth-icon"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg></div>
+      <h1>Pair this device</h1>
+      <p id="pairMsg" class="sub"></p>
+      <label class="field" for="code">Pairing code</label>
+      <input id="code" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" placeholder="000000">
+      <p id="pairErr" class="err" role="alert"></p>
+      <button id="pairBtn" class="btn primary block" type="button">Pair device</button>
+      <ul class="facts">
+        <li>Each code works once and expires after a few minutes.</li>
+        <li>Files move directly between devices on this network.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="app" hidden>
+    <div class="page-head">
+      <h1>Transfer files</h1>
+      <p class="sub">Send files to this computer or download what has been shared. Everything stays on your local network.</p>
+    </div>
+
+    <div id="codeBox" class="callout" hidden>
+      <div class="callout-text">
+        <div class="callout-title">Pair another device</div>
+        <p>Enter this code on the other device. <span id="codeLeft"></span></p>
+      </div>
+      <div id="codeVal" class="digits"></div>
+      <button id="codeClose" class="icon-btn" type="button" aria-label="Dismiss"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Send files</h2>
+        <button id="clearQueue" class="btn text" type="button" hidden>Clear finished</button>
+      </div>
+      <label id="drop" class="drop">
+        <input id="file" type="file" multiple hidden>
+        <span class="drop-icon"><svg class="ic" aria-hidden="true"><use href="#i-upload"/></svg></span>
+        <span class="drop-title">Drag files here or <u>browse</u></span>
+        <span class="drop-sub">Up to <span id="max"></span> per file</span>
+      </label>
+      <ul id="queue" class="queue"></ul>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Shared files<span id="count" class="count"></span></h2>
+        <button id="refreshBtn" class="btn text" type="button">Refresh</button>
+      </div>
+      <div class="thead"><span>Name</span><span>Size</span><span>Modified</span><span></span></div>
+      <ul id="files"></ul>
+    </section>
+  </section>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const NS = "http://www.w3.org/2000/svg";
+const PAIR_HELP = "Enter the 6-digit code shown in the terminal on the computer running FlameDrop.";
+const SESSION_ENDED = "Your session has ended. Enter a new pairing code to continue.";
+const KINDS = {
+  image: ["jpg", "jpeg", "png", "gif", "webp", "heic", "svg", "bmp"],
+  video: ["mp4", "mov", "mkv", "avi", "webm"],
+  audio: ["mp3", "wav", "flac", "m4a", "aac"],
+  doc: ["pdf", "doc", "docx", "txt", "md", "rtf", "odt"],
+  sheet: ["xls", "xlsx", "csv", "ods"],
+  slide: ["ppt", "pptx", "key"],
+  archive: ["zip", "rar", "7z", "tar", "gz"]
+};
+let cfg = {max_size: 0, blocked: []};
+let expiresAt = 0;
+let codeUntil = 0;
+let tick = null;
+let codeTick = null;
+let busy = false;
+let pairing = false;
+const queue = [];
+const items = [];
+
+function icon(name) {
+  const s = document.createElementNS(NS, "svg");
+  s.setAttribute("class", "ic");
+  s.setAttribute("aria-hidden", "true");
+  const u = document.createElementNS(NS, "use");
+  u.setAttribute("href", "#i-" + name);
+  s.append(u);
+  return s;
+}
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+function fmt(n) {
+  const u = ["B", "KB", "MB", "GB", "TB"];
+  let i = 0;
+  while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
+  return (i ? n.toFixed(n >= 100 ? 0 : 1) : n) + " " + u[i];
+}
+
+function clock(s) {
+  return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+}
+
+function badge(name) {
+  const m = name.match(/\.([^.]+)$/);
+  const ext = m ? m[1].toLowerCase() : "";
+  let kind = "other";
+  for (const k in KINDS) {
+    if (KINDS[k].includes(ext)) { kind = k; break; }
+  }
+  return el("span", "badge k-" + kind, (ext || "file").slice(0, 4));
+}
+
+function show(view, msg) {
+  $("#pair").hidden = view !== "pair";
+  $("#app").hidden = view !== "app";
+  $("#topActions").hidden = view !== "app";
+  if (view === "pair") {
+    clearInterval(tick);
+    $("#pairMsg").textContent = msg || PAIR_HELP;
+    $("#code").focus();
+  }
+}
+
+async function api(path, opts, quiet) {
+  const r = await fetch(path, Object.assign({credentials: "same-origin"}, opts));
+  if (r.status === 401) {
+    show("pair", quiet ? null : SESSION_ENDED);
+    throw new Error("auth");
+  }
+  return r;
+}
+
+function renderFiles(files) {
+  const ul = $("#files");
+  ul.replaceChildren();
+  $("#count").textContent = files.length ? String(files.length) : "";
+  if (!files.length) {
+    const li = el("li", "empty");
+    li.append(icon("folder"));
+    li.append(el("strong", null, "No files yet"));
+    li.append(el("span", null, "Files sent from any paired device will appear here."));
+    ul.append(li);
+    return;
+  }
+  for (const f of files) {
+    const when = new Date(f.mtime * 1000).toLocaleString(undefined, {
+      month: "short", day: "numeric", hour: "numeric", minute: "2-digit"
+    });
+    const li = el("li", "frow");
+    const cell = el("div", "fname");
+    const text = el("div", "ftext");
+    const meta = el("div", "fmeta");
+    meta.append(el("span", null, fmt(f.size)), el("span", null, when));
+    text.append(el("span", "name", f.name), meta);
+    cell.append(badge(f.name), text);
+    const a = el("a", "btn ghost sm collapse");
+    a.href = "/download/" + encodeURIComponent(f.name);
+    a.setAttribute("download", f.name);
+    a.setAttribute("aria-label", "Download " + f.name);
+    a.title = "Download";
+    a.append(icon("download"), el("span", "lbl", "Download"));
+    li.append(cell, el("span", "fsize", fmt(f.size)), el("span", "fdate", when), a);
+    ul.append(li);
+  }
+}
+
+function startTimer() {
+  clearInterval(tick);
+  const update = () => {
+    const s = Math.max(0, Math.round((expiresAt - Date.now()) / 1000));
+    $("#timer").textContent = clock(s);
+    $("#sessionPill").classList.toggle("warn", s < 300);
+    if (s <= 0) show("pair", "Your session has expired. Enter a new pairing code to continue.");
+  };
+  update();
+  tick = setInterval(update, 1000);
+}
+
+async function refresh(first) {
+  const r = await api("/api/files", undefined, first);
+  const d = await r.json();
+  cfg = d;
+  expiresAt = Date.now() + d.expires_in * 1000;
+  $("#max").textContent = fmt(d.max_size);
+  renderFiles(d.files);
+  show("app");
+  startTimer();
+}
+
+async function pair() {
+  if (pairing) return;
+  const code = $("#code").value.trim();
+  if (code.length !== 6) {
+    $("#pairErr").textContent = "Enter all 6 digits.";
+    return;
+  }
+  pairing = true;
+  $("#pairBtn").disabled = true;
+  $("#pairErr").textContent = "";
+  try {
+    const r = await fetch("/api/pair", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({code})
+    });
+    if (r.ok) {
+      $("#code").value = "";
+      await refresh();
+    } else {
+      const d = await r.json().catch(() => ({}));
+      $("#pairErr").textContent = d.error || "Pairing failed. Try again.";
+      $("#code").select();
+    }
+  } catch (e) {
+    $("#pairErr").textContent = "Could not reach FlameDrop. Check your Wi-Fi connection.";
+  } finally {
+    pairing = false;
+    $("#pairBtn").disabled = false;
+  }
+}
+
+function syncClear() {
+  $("#clearQueue").hidden = !items.some(i => i.status === "done" || i.status === "failed");
+}
+
+function settle(item, status) {
+  item.status = status;
+  item.btn.setAttribute("aria-label", "Remove from list");
+  item.btn.title = "Remove from list";
+  syncClear();
+}
+
+function fail(item, msg) {
+  item.state.textContent = msg;
+  item.state.className = "state bad";
+  item.track.hidden = true;
+  settle(item, "failed");
+}
+
+function finish(item, name) {
+  item.bar.style.width = "100%";
+  item.track.classList.add("done");
+  item.state.textContent = "Uploaded";
+  item.state.className = "state ok";
+  item.sub.textContent = name !== item.file.name ? "Saved as " + name : fmt(item.file.size);
+  settle(item, "done");
+}
+
+function dismiss(item) {
+  if (item.status === "queued") {
+    const i = queue.indexOf(item);
+    if (i >= 0) queue.splice(i, 1);
+    fail(item, "Cancelled");
+  } else if (item.status === "active") {
+    item.xhr.abort();
+  } else {
+    item.li.remove();
+    const i = items.indexOf(item);
+    if (i >= 0) items.splice(i, 1);
+    syncClear();
+  }
+}
+
+function makeItem(file) {
+  const li = el("li", "qitem");
+  const main = el("div", "qmain");
+  const top = el("div", "qtop");
+  const state = el("span", "state", "Waiting");
+  top.append(el("span", "name", file.name), state);
+  const track = el("div", "track");
+  const bar = document.createElement("i");
+  track.append(bar);
+  const sub = el("div", "qsub", fmt(file.size));
+  main.append(top, track, sub);
+  const btn = el("button", "icon-btn");
+  btn.type = "button";
+  btn.setAttribute("aria-label", "Cancel upload");
+  btn.title = "Cancel upload";
+  btn.append(icon("x"));
+  li.append(badge(file.name), main, btn);
+  $("#queue").append(li);
+  const item = {file, li, bar, track, state, sub, btn, xhr: null, status: "queued"};
+  btn.onclick = () => dismiss(item);
+  items.push(item);
+  return item;
+}
+
+function send(item) {
+  return new Promise(resolve => {
+    const x = new XMLHttpRequest();
+    const t0 = Date.now();
+    item.xhr = x;
+    item.status = "active";
+    item.state.textContent = "0%";
+    x.open("POST", "/api/upload");
+    x.setRequestHeader("X-Filename", encodeURIComponent(item.file.name));
+    x.setRequestHeader("Content-Type", "application/octet-stream");
+    x.upload.onprogress = e => {
+      if (!e.lengthComputable) return;
+      const p = e.loaded / e.total;
+      const speed = e.loaded / Math.max(0.2, (Date.now() - t0) / 1000);
+      item.bar.style.width = (p * 100).toFixed(1) + "%";
+      item.state.textContent = Math.round(p * 100) + "%";
+      item.sub.textContent = fmt(e.loaded) + " of " + fmt(e.total) + " at " + fmt(speed) + "/s";
+    };
+    x.onload = () => {
+      let d = {};
+      try { d = JSON.parse(x.responseText); } catch (e) {}
+      if (x.status === 200) {
+        finish(item, d.name);
+      } else {
+        if (x.status === 401) show("pair", SESSION_ENDED);
+        fail(item, d.error || "Upload failed");
+      }
+      resolve();
+    };
+    x.onerror = () => { fail(item, "Connection lost"); resolve(); };
+    x.onabort = () => { fail(item, "Cancelled"); resolve(); };
+    x.send(item.file);
+  });
+}
+
+async function pump() {
+  if (busy) return;
+  busy = true;
+  while (queue.length) await send(queue.shift());
+  busy = false;
+  refresh().catch(() => {});
+}
+
+function addFiles(list) {
+  for (const file of list) {
+    const item = makeItem(file);
+    const ext = (file.name.match(/\.[^.]*$/) || [""])[0].toLowerCase();
+    if (file.size === 0) fail(item, "File is empty");
+    else if (file.size > cfg.max_size) fail(item, "Over the " + fmt(cfg.max_size) + " limit");
+    else if (cfg.blocked.includes(ext)) fail(item, "File type not allowed");
+    else queue.push(item);
+  }
+  pump();
+}
+
+function hideCode() {
+  clearInterval(codeTick);
+  $("#codeBox").hidden = true;
+}
+
+$("#pairBtn").onclick = pair;
+$("#code").addEventListener("keydown", e => { if (e.key === "Enter") pair(); });
+$("#code").addEventListener("input", e => {
+  e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6);
+  $("#pairErr").textContent = "";
+  if (e.target.value.length === 6) pair();
+});
+$("#file").addEventListener("change", e => {
+  addFiles(Array.from(e.target.files));
+  e.target.value = "";
+});
+const drop = $("#drop");
+drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("over"); });
+drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+drop.addEventListener("drop", e => {
+  e.preventDefault();
+  drop.classList.remove("over");
+  addFiles(Array.from(e.dataTransfer.files));
+});
+$("#clearQueue").onclick = () => {
+  for (const item of items.slice()) {
+    if (item.status === "done" || item.status === "failed") dismiss(item);
+  }
+};
+$("#refreshBtn").onclick = () => refresh().catch(() => {});
+$("#newCode").onclick = async () => {
+  const r = await api("/api/newcode", {method: "POST"});
+  const d = await r.json();
+  $("#codeVal").textContent = d.code.slice(0, 3) + " " + d.code.slice(3);
+  codeUntil = Date.now() + d.expires_in * 1000;
+  $("#codeBox").hidden = false;
+  clearInterval(codeTick);
+  const update = () => {
+    const s = Math.max(0, Math.round((codeUntil - Date.now()) / 1000));
+    $("#codeLeft").textContent = "Expires in " + clock(s) + ".";
+    if (s <= 0) hideCode();
+  };
+  update();
+  codeTick = setInterval(update, 1000);
+};
+$("#codeClose").onclick = hideCode;
+$("#logout").onclick = async () => {
+  await fetch("/api/logout", {method: "POST", credentials: "same-origin"});
+  hideCode();
+  show("pair", "You have been disconnected. Enter a pairing code to reconnect.");
+};
+
+setInterval(() => {
+  if (!$("#app").hidden && !busy && !document.hidden) refresh().catch(() => {});
+}, 10000);
+
+refresh(true).catch(() => show("pair"));
+</script>
+</body>
+</html>
